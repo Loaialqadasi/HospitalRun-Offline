@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: hospitalrun
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run render-build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 10000

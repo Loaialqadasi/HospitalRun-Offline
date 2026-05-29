@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  username       String   @unique
+  password       String
+  fullName       String
+  role           String   // "admin", "clinician", "nurse", "executive"
+  email          String?
+  failedAttempts Int      @default(0)
+  locked         Boolean  @default(false)
+  lastActivity   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  assignedPatientIds String? // comma-separated patient IDs for clinicians
+}
+
+model Patient {
+  id            String   @id @default(cuid())
+  patientId     String   @unique // e.g., PT-100
+  name          String
+  dateOfBirth   String
+  gender        String
+  contact       String
+  email         String?
+  nationalId    String?
+  bloodType     String?
+  phone         String?
+  address       String?
+  assignedDoctor String?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Medication {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  dosage        String
+  quantity      Int
+  threshold     Int      @default(10)
+  unit          String   @default("units")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model DispenseLog {
+  id            String   @id @default(cuid())
+  medicationId  String
+  medicationName String
+  quantity      Int
+  dispensedBy   String?
+  createdAt     DateTime @default(now())
+}
+
+model Appointment {
+  id            String   @id @default(cuid())
+  patientId     String
+  patientName   String
+  providerName  String
+  date          String
+  startTime     String
+  endTime       String
+  status        String   @default("scheduled") // scheduled, cancelled, completed
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SyncQueueItem {
+  id            String   @id @default(cuid())
+  action        String   // "edit", "dispense", "appointment"
+  entity        String   // "patient", "medication", "appointment"
+  entityId      String
+  data          String   // JSON string of the change
+  status        String   @default("pending") // pending, syncing, failed, synced
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  action        String
+  entity        String
+  entityId      String?
+  details       String?
+  userId        String?
+  timestamp     DateTime @default(now())
+}
+
+model ExportLog {
+  id            String   @id @default(cuid())
+  format        String   // "pdf", "csv"
+  recordCount   Int
+  exportedBy    String
+  createdAt     DateTime @default(now())
+}
+
+model Setting {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  value         String
+  updatedAt     DateTime @updatedAt
+}
